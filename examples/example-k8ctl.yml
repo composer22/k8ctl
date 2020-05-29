@@ -1,0 +1,11 @@
+# clusters -clusters to administrate
+#   <name>...
+#      auth-token: token given by admin of server to access the API accessID + "/" + token
+#      url:  hostname and path
+clusters:
+  nyc:
+    auth_token: id/a-token
+    url: https://api.yourcompany.com:8080
+  boston:
+    auth_token: id/another-token
+    url: http://0.0.0.0:8080

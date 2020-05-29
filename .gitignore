@@ -1,0 +1,7 @@
+.k8ctl.yaml
+.k8ctl.yml
+k8ctl
+k8ctl-darwin-amd64
+k8ctl-linux-amd64
+k8ctl-windows-amd64.exe
+**/.DS_Store
