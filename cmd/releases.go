@@ -154,7 +154,7 @@ func init() {
 	releasesSubCmdList.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
 	releasesSubCmdList.MarkFlagRequired("namespace")
 
-	releasesSubCmdRollback.Flags().StringP("revision", "r", "", "A previous release version")
+	releasesSubCmdRollback.Flags().StringP("revision", "r", "0", "A previous release version")
 
 	releasesSubCmdStatus.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
 }

@@ -38,7 +38,6 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.k8ctl.yaml)")
 	RootCmd.PersistentFlags().StringVarP(&cluster, "cluster", "l", "", "Cluster to access (mandatory)")
 
-	// Get values from config file.
 	RootCmd.MarkFlagRequired("cluster")
 }
 
