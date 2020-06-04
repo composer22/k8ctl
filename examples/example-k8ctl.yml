@@ -2,6 +2,7 @@
 #   <name>...
 #      auth-token: token given by admin of server to access the API accessID + "/" + token
 #      url:  hostname and path
+default_cluster: boston
 clusters:
   nyc:
     auth_token: id/a-token

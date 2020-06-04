@@ -36,9 +36,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.k8ctl.yaml)")
-	RootCmd.PersistentFlags().StringVarP(&cluster, "cluster", "l", "", "Cluster to access (mandatory)")
-
-	RootCmd.MarkFlagRequired("cluster")
+	RootCmd.PersistentFlags().StringVarP(&cluster, "cluster", "l", "", "Cluster to access")
 }
 
 func er(msg interface{}) {
@@ -69,21 +67,16 @@ func initConfig() {
 		os.Exit(0)
 	}
 
-	// Sample code to keep around because it's cool.
-	// clusters := viper.Get("clusters")
-	// if rec, ok := clusters.(map[string]interface{}); ok {
-	// 	for key, val := range rec {
-	// 		fmt.Printf("Cluster %s:\n", key)
-	// 		if subrec, ok := val.(map[string]interface{}); ok {
-	// 			for key, val := range subrec {
-	// 				fmt.Printf("%s:%s\n", key, val)
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	// Retrieve the Cluster bearer token and url from the config based on the
 	// cluster param.
+	defaultCluster := viper.GetString("default_cluster")
+	if cluster == "" {
+		if defaultCluster == "" {
+			fmt.Println("Cluster name is mandatory.")
+			os.Exit(0)
+		}
+		cluster = defaultCluster
+	}
 
 	bearerToken = viper.GetString(fmt.Sprintf("clusters.%s.%s", cluster, "auth_token"))
 	clusterUrl = viper.GetString(fmt.Sprintf("clusters.%s.%s", cluster, "url"))
