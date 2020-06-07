@@ -134,6 +134,31 @@ func (c *Client) Status(release string, format string) (*Response, error) {
 
 // Kube related commands
 
+// Configmap prints out the details of a configmap.
+func (c *Client) Configmap(name string, namespace string) (*Response, error) {
+	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteConfigmap, name)), nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("n", namespace)
+	req.URL.RawQuery = q.Encode()
+	return c.sendRequest(req, "configmaps", httpRouteConfigmapsVersion)
+}
+
+// Configmaps prints out a list of configmaps.
+func (c *Client) Configmaps(namespace string, format string) (*Response, error) {
+	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, httpRouteConfigmaps), nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("n", namespace)
+	q.Add("f", format)
+	req.URL.RawQuery = q.Encode()
+	return c.sendRequest(req, "configmaps", httpRouteConfigmapsVersion)
+}
+
 // Cronjob prints out the details of a running cronjob.
 func (c *Client) Cronjob(name string, namespace string) (*Response, error) {
 	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteCronjob, name)), nil)

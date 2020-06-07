@@ -3,7 +3,7 @@ package client
 const (
 	applicationName = "k8ctl"        // Application name.
 	serverName      = "k8ctl-server" // Server name.
-	version         = "1.0.0"        // Application version.
+	version         = "1.0.1"        // Application version.
 
 	// Helm related
 	httpRouteReleases        = "/releases"             // List, deploy releases.(?e=environment; POST)
@@ -12,6 +12,8 @@ const (
 	httpRouteReleaseHistory  = "/releases/%s/history"  // Display the history of a release.
 
 	// Kube related
+	httpRouteConfigmaps        = "/configmaps"             // Display a list of configmaps.
+	httpRouteConfigmap         = "/configmaps/%s"          // Display details of a configmap.
 	httpRouteCronjobs          = "/cronjobs"               // Display a list of cronjobs.
 	httpRouteCronjob           = "/cronjobs/%s"            // Display details of a cronjob.
 	httpRouteDeployments       = "/deployments"            // Display a list of deployments.
@@ -31,6 +33,7 @@ const (
 
 	// API Versions
 	httpRouteReleasesVersion    = "v1.0.0"
+	httpRouteConfigmapsVersion  = "v1.0.0"
 	httpRouteCronjobsVersion    = "v1.0.0"
 	httpRouteDeploymentsVersion = "v1.0.0"
 	httpRouteIngressesVersion   = "v1.0.0"
