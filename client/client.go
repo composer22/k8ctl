@@ -303,6 +303,31 @@ func (c *Client) Pods(namespace string, format string) (*Response, error) {
 	return c.sendRequest(req, "pods", httpRoutePodsVersion)
 }
 
+// Secret prints out details of a secret.
+func (c *Client) Secret(name string, namespace string) (*Response, error) {
+	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteSecret, name)), nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("n", namespace)
+	req.URL.RawQuery = q.Encode()
+	return c.sendRequest(req, "secrets", httpRouteSecretsVersion)
+}
+
+// Secrets prints out a list of secrets.
+func (c *Client) Secrets(namespace string, format string) (*Response, error) {
+	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, httpRouteSecrets), nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("n", namespace)
+	q.Add("f", format)
+	req.URL.RawQuery = q.Encode()
+	return c.sendRequest(req, "secrets", httpRouteSecretsVersion)
+}
+
 // Service prints out details of a service.
 func (c *Client) Service(name string, namespace string) (*Response, error) {
 	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteService, name)), nil)

@@ -34,7 +34,7 @@ k8ctl services describe -l nyc -n dev myapp-service-123`,
 	}
 
 	servicesSubCmdList = &cobra.Command{
-		Use:   "list [flags] [REGEXP]",
+		Use:   "list [flags]",
 		Short: "List services",
 		Long:  "List will display a list of all services in a cluster and namespace.",
 		Args:  cobra.MaximumNArgs(0),
