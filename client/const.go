@@ -3,7 +3,7 @@ package client
 const (
 	applicationName = "k8ctl"        // Application name.
 	serverName      = "k8ctl-server" // Server name.
-	version         = "1.0.2"        // Application version.
+	version         = "1.0.3"        // Application version.
 
 	// Helm related
 	httpRouteReleases        = "/releases"             // List, deploy releases.(?e=environment; POST)
@@ -25,8 +25,6 @@ const (
 	httpRouteJob               = "/jobs/%s"                // Display details of a jobs.
 	httpRoutePods              = "/pods"                   // Display a list of running pods.
 	httpRoutePod               = "/pods/%s"                // Display details of a running pod.
-	httpRouteSecrets           = "/secrets"                // Display a list of secrets
-	httpRouteSecret            = "/secrets/%s"             // Display details of a secret.
 	httpRouteServices          = "/services"               // Display a list of running services.
 	httpRouteService           = "/services/%s"            // Display details of a running service.
 
@@ -41,7 +39,6 @@ const (
 	httpRouteIngressesVersion   = "v1.0.0"
 	httpRouteJobsVersion        = "v1.0.0"
 	httpRoutePodsVersion        = "v1.0.0"
-	httpRouteSecretsVersion     = "v1.0.0"
 	httpRouteServicesVersion    = "v1.0.0"
 	httpRouteGuideVersion       = "v1.0.0"
 
