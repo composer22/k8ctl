@@ -51,7 +51,7 @@ k8ctl releases delete -l nyc myapp-dev`,
 			return runDeploy(release, tag, namespace, memo)
 		},
 		Example: `k8ctl releases deploy --help
-k8ctl releases deploy --cluster nyc --namespace dev --tag k8-1.0.0-1234 myapp-service
+k8ctl releases deploy --cluster nyc --namespace dev --tag k8-1.0.0-1234 -m "a boring bug." myapp-service
 k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 --memo "a really good bug!" myapp-service`,
 	}
 
@@ -149,9 +149,10 @@ func init() {
 
 	releasesSubCmdDeploy.Flags().StringP("tag", "t", "", "Docker image tag (required)")
 	releasesSubCmdDeploy.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
-	releasesSubCmdDeploy.Flags().StringP("memo", "m", "", "Information to display in slack etc. (optional)")
+	releasesSubCmdDeploy.Flags().StringP("memo", "m", "", "Information to display in slack etc. (required)")
 	releasesSubCmdDeploy.MarkFlagRequired("tag")
 	releasesSubCmdDeploy.MarkFlagRequired("namespace")
+	releasesSubCmdDeploy.MarkFlagRequired("memo")
 
 	releasesSubCmdHistory.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
 
