@@ -15,6 +15,7 @@ type Client struct {
 }
 
 type DeployRequest struct {
+	Memo       string `json:"memo"`       // Optional text to display in slack etc.
 	Name       string `json:"name"`       // The application/chart name to deploy.
 	Namespace  string `json:"namespace"`  // The namespace to deploy.
 	VersionTag string `json:"versionTag"` // The docker version tag.
@@ -54,9 +55,10 @@ func (c *Client) Delete(release string) (*Response, error) {
 }
 
 // Deploy submits a deploy request to the server.
-func (c *Client) Deploy(name string, versionTag string, namespace string) (*Response, error) {
+func (c *Client) Deploy(name string, versionTag string, namespace string, memo string) (*Response, error) {
 	// Create the payload.
 	dr := &DeployRequest{
+		Memo:       memo,
 		Name:       name,
 		Namespace:  namespace,
 		VersionTag: versionTag,

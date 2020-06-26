@@ -36,7 +36,7 @@ k8ctl releases delete -l nyc myapp-dev`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			release := args[0]
-			var tag, namespace string
+			var tag, namespace, memo string
 			var err error
 			if tag, err = cmd.Flags().GetString("tag"); err != nil {
 				return err
@@ -44,11 +44,15 @@ k8ctl releases delete -l nyc myapp-dev`,
 			if namespace, err = cmd.Flags().GetString("namespace"); err != nil {
 				return err
 			}
-			return runDeploy(release, tag, namespace)
+			if memo, err = cmd.Flags().GetString("memo"); err != nil {
+				return err
+			}
+
+			return runDeploy(release, tag, namespace, memo)
 		},
 		Example: `k8ctl releases deploy --help
 k8ctl releases deploy --cluster nyc --namespace dev --tag k8-1.0.0-1234 myapp-service
-k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 myapp-service`,
+k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 --memo "a really good bug!" myapp-service`,
 	}
 
 	releasesSubCmdHistory = &cobra.Command{
@@ -145,6 +149,7 @@ func init() {
 
 	releasesSubCmdDeploy.Flags().StringP("tag", "t", "", "Docker image tag (required)")
 	releasesSubCmdDeploy.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
+	releasesSubCmdDeploy.Flags().StringP("memo", "m", "", "Information to display in slack etc. (optional)")
 	releasesSubCmdDeploy.MarkFlagRequired("tag")
 	releasesSubCmdDeploy.MarkFlagRequired("namespace")
 
@@ -171,9 +176,9 @@ func runDelete(release string) error {
 	return nil
 }
 
-func runDeploy(release string, tag string, namespace string) error {
+func runDeploy(release string, tag string, namespace string, memo string) error {
 	cl := client.NewClient(clusterUrl, bearerToken)
-	resp, err := cl.Deploy(release, tag, namespace)
+	resp, err := cl.Deploy(release, tag, namespace, memo)
 	if err != nil {
 		return err
 	}
