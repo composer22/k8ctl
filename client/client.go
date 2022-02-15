@@ -14,6 +14,10 @@ type Client struct {
 	Url   string `json:"URL"`         // The URL to the server endpoint.
 }
 
+type DeleteRequest struct {
+	Namespace string `json:"namespace"` // The namespace where the deployment is running.
+}
+
 type DeployRequest struct {
 	Memo       string `json:"memo"`       // Optional text to display in slack etc.
 	Name       string `json:"name"`       // The application/chart name to deploy.
@@ -26,7 +30,8 @@ type RestartRequest struct {
 }
 
 type RollbackRequest struct {
-	Revision string `json:"revision"` // The revision to roll back to (optional)
+	Namespace string `json:"namespace"` // The namespace where the deployment is running.
+	Revision  string `json:"revision"`  // The revision to roll back to (optional)
 }
 
 // New is a factory function that returns a new client instance.
@@ -45,9 +50,20 @@ func (c *Client) Version() string {
 // Helm related commands.
 
 // Delete removes a deployed release from the cluster.
-func (c *Client) Delete(release string) (*Response, error) {
+func (c *Client) Delete(release string, namespace string) (*Response, error) {
+
+	// Create the payload.
+	dr := &DeleteRequest{
+		Namespace: namespace,
+	}
+	payload, err := json.Marshal(dr)
+	if err != nil {
+		return nil, err
+	}
+
 	// Send the request.
-	req, err := http.NewRequest(httpDelete, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteRelease, release)), nil)
+	req, err := http.NewRequest(httpDelete, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteRelease, release)),
+		bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +94,13 @@ func (c *Client) Deploy(name string, versionTag string, namespace string, memo s
 }
 
 // History prints out the detail historical activity for a release.
-func (c *Client) History(release string, format string) (*Response, error) {
+func (c *Client) History(release string, namespace string, format string) (*Response, error) {
 	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteReleaseHistory, release)), nil)
 	if err != nil {
 		return nil, err
 	}
 	q := req.URL.Query()
+	q.Add("n", namespace)
 	q.Add("f", format)
 	req.URL.RawQuery = q.Encode()
 	return c.sendRequest(req, "releases", httpRouteReleasesVersion)
@@ -103,10 +120,11 @@ func (c *Client) List(namespace string, format string) (*Response, error) {
 }
 
 // Rollback removes a deployed release froms the cluster and restarts the previous one in history.
-func (c *Client) Rollback(release string, revision string) (*Response, error) {
+func (c *Client) Rollback(release string, namespace string, revision string) (*Response, error) {
 	// Create the payload.
 	dr := &RollbackRequest{
-		Revision: revision,
+		Namespace: namespace,
+		Revision:  revision,
 	}
 	payload, err := json.Marshal(dr)
 	if err != nil {
@@ -123,12 +141,13 @@ func (c *Client) Rollback(release string, revision string) (*Response, error) {
 }
 
 // Status gets the details of a release.
-func (c *Client) Status(release string, format string) (*Response, error) {
+func (c *Client) Status(release string, namespace string, format string) (*Response, error) {
 	req, err := http.NewRequest(httpGet, fmt.Sprintf("%s%s", c.Url, fmt.Sprintf(httpRouteRelease, release)), nil)
 	if err != nil {
 		return nil, err
 	}
 	q := req.URL.Query()
+	q.Add("n", namespace)
 	q.Add("f", format)
 	req.URL.RawQuery = q.Encode()
 	return c.sendRequest(req, "releases", httpRouteReleasesVersion)

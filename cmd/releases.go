@@ -22,11 +22,14 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			release := args[0]
-			return runDelete(release)
+			if namespace, err := cmd.Flags().GetString("namespace"); err != nil {
+				return err
+			}
+			return runDelete(release, namespace)
 		},
 		Example: `k8ctl releases delete --help
-k8ctl releases delete --cluster nyc myapp-dev
-k8ctl releases delete -l nyc myapp-dev`,
+k8ctl releases delete --cluster nyc --namespace dev myapp-dev
+k8ctl releases delete -l nyc -n dev myapp-dev`,
 	}
 
 	releasesSubCmdDeploy = &cobra.Command{
@@ -51,8 +54,8 @@ k8ctl releases delete -l nyc myapp-dev`,
 			return runDeploy(release, tag, namespace, memo)
 		},
 		Example: `k8ctl releases deploy --help
-k8ctl releases deploy --cluster nyc --namespace dev --tag k8-1.0.0-1234 -m "a boring bug." myapp-service
-k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 --memo "a really good bug!" myapp-service`,
+k8ctl releases deploy --cluster nyc --namespace dev --tag k8-1.0.0-1234 -m "a boring bug." acme/app
+k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 --memo "a really good bug!" acme/app`,
 	}
 
 	releasesSubCmdHistory = &cobra.Command{
@@ -62,16 +65,21 @@ k8ctl releases deploy -l nyc -n dev -t k8-1.0.0-1234 --memo "a really good bug!"
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			release := args[0]
-			format, err := cmd.Flags().GetString("format")
-			if err != nil {
+			var namespace, format string
+			var err error
+			if namespace, err = cmd.Flags().GetString("namespace"); err != nil {
 				return err
 			}
-			return runHistory(release, format)
+			if format, err = cmd.Flags().GetString("format"); err != nil {
+				return err
+			}
+
+			return runHistory(release, namespace, format)
 		},
 		Example: `k8ctl releases history --help
-k8ctl releases history --cluster nyc my-release-dev
-k8ctl releases history -l nyc --format json my-release-dev
-k8ctl releases history -l nyc -f yaml my-release-dev`,
+k8ctl releases history --cluster nyc --namespace dev my-release-dev
+k8ctl releases history -l nyc -n dev --format json my-release-dev
+k8ctl releases history -l nyc -n dev -f yaml my-release-dev`,
 	}
 
 	releasesSubCmdList = &cobra.Command{
@@ -80,16 +88,14 @@ k8ctl releases history -l nyc -f yaml my-release-dev`,
 		Long:  "List will display a list of all releases in a namespace.",
 		Args:  cobra.MaximumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			namespace, err := cmd.Flags().GetString("namespace")
-			if err != nil {
+			var namespace, format string
+			var err error
+			if namespace, err = cmd.Flags().GetString("namespace"); err != nil {
 				return err
 			}
-			var format string
-			format, err = cmd.Flags().GetString("format")
-			if err != nil {
+			if format, err = cmd.Flags().GetString("format"); err != nil {
 				return err
 			}
-
 			return runList(namespace, format)
 		},
 		Example: `k8ctl release list --help
@@ -105,16 +111,20 @@ k8ctl release list -l nyc -n dev -f yaml`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			release := args[0]
-			revision, err := cmd.Flags().GetString("revision")
-			if err != nil {
+			var namespace, revision string
+			var err error
+			if namespace, err = cmd.Flags().GetString("namespace"); err != nil {
 				return err
 			}
-			return runRollback(release, revision)
+			if revision, err = cmd.Flags().GetString("revision"); err != nil {
+				return err
+			}
+			return runRollback(release, namespace, revision)
 		},
 		Example: `k8ctl releases rollback --help
-k8ctl releases rollback --cluster nyc my-release-dev-003
-k8ctl releases rollback -c nyc --revision my-release-dev-001 my-release-dev-003
-k8ctl releases rollback -c nyc -r my-release-dev-001 my-release-dev-003`,
+k8ctl releases rollback --cluster --namespace dev nyc my-release-dev-003
+k8ctl releases rollback -c nyc -n dev --revision my-release-dev-001 my-release-dev-003
+k8ctl releases rollback -c nyc -n dev -r my-release-dev-001 my-release-dev-003`,
 	}
 
 	releasesSubCmdStatus = &cobra.Command{
@@ -124,17 +134,21 @@ k8ctl releases rollback -c nyc -r my-release-dev-001 my-release-dev-003`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			release := args[0]
-			format, err := cmd.Flags().GetString("format")
-			if err != nil {
+			var namespace, format string
+			var err error
+			if namespace, err = cmd.Flags().GetString("namespace"); err != nil {
 				return err
 			}
-			return runStatus(release, format)
+			if format, err = cmd.Flags().GetString("format"); err != nil {
+				return err
+			}
+			return runStatus(release, namespace, format)
 		},
 		Example: `k8ctl releases status --help
-k8ctl releases status --cluster nyc my-release-dev
-k8ctl releases status -l nyc my-release-dev
-k8ctl releases status -l nyc --format json my-release-dev
-k8ctl releases status -l nyc -f yaml my-release-dev`,
+k8ctl releases status --cluster nyc --namespace dev my-release-dev
+k8ctl releases status -l nyc -n dev my-release-dev
+k8ctl releases status -l nyc -n dev --format json my-release-dev
+k8ctl releases status -l nyc -n dev -f yaml my-release-dev`,
 	}
 )
 
@@ -147,6 +161,9 @@ func init() {
 	releasesCmd.AddCommand(releasesSubCmdRollback)
 	releasesCmd.AddCommand(releasesSubCmdStatus)
 
+	releasesSubCmdDelete.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
+	releasesSubCmdDelete.MarkFlagRequired("namespace")
+
 	releasesSubCmdDeploy.Flags().StringP("tag", "t", "", "Docker image tag (required)")
 	releasesSubCmdDeploy.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
 	releasesSubCmdDeploy.Flags().StringP("memo", "m", "", "Information to display in slack etc. (required)")
@@ -154,22 +171,29 @@ func init() {
 	releasesSubCmdDeploy.MarkFlagRequired("namespace")
 	releasesSubCmdDeploy.MarkFlagRequired("memo")
 
+	releasesSubCmdHistory.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
 	releasesSubCmdHistory.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
+	releasesSubCmdHistory.MarkFlagRequired("namespace")
 
 	releasesSubCmdList.Flags().StringP("namespace", "n", "", "Namespace to list to: dev, qa etc. (required)")
 	releasesSubCmdList.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
 	releasesSubCmdList.MarkFlagRequired("namespace")
 
 	releasesSubCmdRollback.Flags().StringP("revision", "r", "0", "A previous release version")
+	releasesSubCmdRollback.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
+	releasesSubCmdRollback.MarkFlagRequired("namespace")
 
+	releasesSubCmdStatus.Flags().StringP("namespace", "n", "", "Namespace to deploy to: dev, qa etc. (required)")
 	releasesSubCmdStatus.Flags().StringP("format", "f", "", "Format (optional: json|yaml)")
+	releasesSubCmdStatus.MarkFlagRequired("namespace")
+
 }
 
 // Support functions to conduct the client call.
 
-func runDelete(release string) error {
+func runDelete(release string, namespace string) error {
 	cl := client.NewClient(clusterUrl, bearerToken)
-	resp, err := cl.Delete(release)
+	resp, err := cl.Delete(release, namespace)
 	if err != nil {
 		return err
 	}
@@ -187,9 +211,9 @@ func runDeploy(release string, tag string, namespace string, memo string) error 
 	return nil
 }
 
-func runHistory(release string, format string) error {
+func runHistory(release string, namespace string, format string) error {
 	cl := client.NewClient(clusterUrl, bearerToken)
-	resp, err := cl.History(release, format)
+	resp, err := cl.History(release, namespace, format)
 	if err != nil {
 		return err
 	}
@@ -207,9 +231,9 @@ func runList(namespace string, format string) error {
 	return nil
 }
 
-func runRollback(release string, revision string) error {
+func runRollback(release string, namespace string, revision string) error {
 	cl := client.NewClient(clusterUrl, bearerToken)
-	resp, err := cl.Rollback(release, revision)
+	resp, err := cl.Rollback(release, namespace, revision)
 	if err != nil {
 		return err
 	}
@@ -217,9 +241,9 @@ func runRollback(release string, revision string) error {
 	return nil
 }
 
-func runStatus(release string, format string) error {
+func runStatus(release string, namespace string, format string) error {
 	cl := client.NewClient(clusterUrl, bearerToken)
-	resp, err := cl.Status(release, format)
+	resp, err := cl.Status(release, namespace, format)
 	if err != nil {
 		return err
 	}

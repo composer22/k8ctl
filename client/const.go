@@ -3,7 +3,7 @@ package client
 const (
 	applicationName = "k8ctl"        // Application name.
 	serverName      = "k8ctl-server" // Server name.
-	version         = "1.0.4"        // Application version.
+	version         = "2.0.0"        // Application version.
 
 	// Helm related
 	httpRouteReleases        = "/releases"             // List, deploy releases.(?e=environment; POST)
